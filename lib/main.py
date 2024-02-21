@@ -26,7 +26,9 @@ def view_suppliers(session):
 def create_product(session):
     name = input("Enter product name: ")
     quantity = int(input("Enter quantity: "))
+    quantity = validate_positive_integer(quantity, "Quantity")
     price = int(input("Enter price: "))
+    price = validate_positive_integer(price, "Price")
     category_names = input("Enter categories (comma-separated): ").split(',')
     supplier_name = input("Enter supplier name: ")
 
@@ -159,8 +161,19 @@ def delete_supplier(session):
     else:
         print(f"Supplier with ID {supplier_id} not found.")
 
+
+def validate_positive_integer(value, field_name):
+    try:
+        int_value = int(value)
+        if int_value <= 0:
+            raise ValueError(f"{field_name} must be a positive integer.")
+        return int_value
+    except ValueError:
+        raise ValueError(f"{field_name} must be a valid positive integer.")
+
+
 def main():
-    Base.metadata.create_all(engine)  # Create tables if they don't exist
+    Base.metadata.create_all(engine)  # Create tables
     Session = sessionmaker(bind=engine)
     session = Session()
 
