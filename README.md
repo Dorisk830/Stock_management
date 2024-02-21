@@ -1,26 +1,20 @@
 #### Stock Management System
+![image](https://github.com/Dorisk830/Stock_management/assets/144509941/2bec9c01-9c6f-4212-aa57-3135a950b8bf)
+![image](https://github.com/Dorisk830/Stock_management/assets/144509941/a885ccd9-42db-4aad-aab2-2b3c50679cd2)
+
 
 This project is a stock management system developed in Python using SQLAlchemy and Alembic for database management and migrations.
 
-It is designed to help businesses keep track of their product inventory. It allows users to add products, list available products, and update product quantities. The project uses SQLAlchemy for object-relational mapping and Alembic for database migrations.
+It is designed to help businesses keep track of their product inventory. It allows users to add and delete products, list available products, and update product quantities. The project uses SQLAlchemy for object-relational mapping and Alembic for database migrations.
 
-#### Features
+### Getting Started
 
-- Add new products with details such as name, quantity, price, categories, and supplier.
-- List all available products.
-- Update the quantity of existing products.
-- Manage categories and suppliers.
-- Support for many-to-many relationships between products and categories.
-- Database migrations using Alembic.
-
-#### Getting Started
-
-### Prerequisites
+#### Prerequisites
 
 - Python3
 - SQLite (or another supported database)
 
-### Installation
+#### Installation
 
 1. Clone the repository:
    git clone https://github.com/Dorisk830/Stock_management.git then
@@ -48,7 +42,7 @@ Remove products, categories, and suppliers from the system.
 5. Exit
 Exit the Product Management System.
 
-### Usage
+#### Usage
 
 1.	Run python main.py to start the system.
 
@@ -66,7 +60,6 @@ Exit the Product Management System.
 •	Update Product:
 
 •	Delete Product
-:
 
 ### Contributing
 Contributions are welcome! Feel free to open issues or submit pull requests.
