@@ -23,15 +23,15 @@ It is designed to help businesses keep track of their product inventory. It allo
 ### Installation
 
 1. Clone the repository:
-   git clone https://github.com/Dorisk830/Stock_management.git
+   git clone https://github.com/Dorisk830/Stock_management.git.
    cd stock-management
 
 
-2. Install dependencies then run the application
+3. Install dependencies then run the application
     pipenv install
     pip install sqlalchemy
 
-3. Database Migrations
+4. Database Migrations
     alembic revision -m "Description of migration"
     alembic upgrade head
 
