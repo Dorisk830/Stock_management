@@ -28,7 +28,6 @@ def create_product(session):
     quantity = int(input("Enter quantity: "))
     quantity = validate_positive_integer(quantity, "Quantity")
     price = int(input("Enter price: "))
-    price = validate_positive_integer(price, "Price")
     category_names = input("Enter categories (comma-separated): ").split(',')
     supplier_name = input("Enter supplier name: ")
 
@@ -182,18 +181,19 @@ def main():
         print("Welcome to our Stock Management System")
         print("-" * 50)
         print("1. View Products")
-        print("2. Create Product")
-        print("3. Update Product")
-        print("4. Delete Product")
-        print("5. View Categories")
-        print("6. Create Category")
-        print("7. Update Category")
-        print("8. Delete Category")
-        print("9. View Suppliers")
+        print("2. View Categories")
+        print("3. View Suppliers")
+        print("4. Create Product")
+        print("5. Update Product")
+        print("6. Delete Product")
+        print("7. Create Category")
+        print("8. Update Category")
+        print("9. Delete Category")
         print("10. Create Supplier")
         print("11. Update Supplier")
         print("12. Delete Supplier")
         print("13. Exit")
+
         choice = input("Enter your choice: ")
 
         if choice == '1':
@@ -221,7 +221,7 @@ def main():
         elif choice == '12':
             delete_supplier(session)
         elif choice == '13':
-            print("Goodbye and welcome again!")
+            print("Goodbye, see you soon!")
             break
         else:
             print("Invalid choice. Please try again.")
