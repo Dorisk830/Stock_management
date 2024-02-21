@@ -1,64 +1,35 @@
 # main.py
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Table
-from sqlalchemy.orm import declarative_base, relationship, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+import os
+import sys
+from sqlalchemy.orm import sessionmaker
+from tabulate import tabulate
+from models import Product, Category, Supplier, Base, engine
 
-from faker import Faker
+sys.path.append(os.getcwd())
 
-Base = declarative_base()
+# CLI functionality for Product, Category, and Supplier
+def view_products(session):
+    products = session.query(Product).all()
+    product_data = [[product.id, product.name, product.quantity, product.price] for product in products]
+    print(tabulate(product_data, headers=["ID", "Name", "Quantity", "Price"], tablefmt="fancy_grid"))
 
-# Association table for many-to-many relationship between Product and Category
-product_category_association = Table(
-    'product_category_association', Base.metadata,
-    Column('product_id', Integer, ForeignKey('product.id')),
-    Column('category_id', Integer, ForeignKey('category.id'))
-)
+def view_categories(session):
+    categories = session.query(Category).all()
+    category_data = [[category.id, category.name] for category in categories]
+    print(tabulate(category_data, headers=["ID", "Name"], tablefmt="fancy_grid"))
 
-class Category(Base):
-    __tablename__ = 'category'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    products = relationship("Product", secondary=product_category_association, back_populates="categories", overlaps="categories")
+def view_suppliers(session):
+    suppliers = session.query(Supplier).all()
+    supplier_data = [[supplier.id, supplier.name] for supplier in suppliers]
+    print(tabulate(supplier_data, headers=["ID", "Name"], tablefmt="fancy_grid"))
 
-class Product(Base):
-    __tablename__ = 'product'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    quantity = Column(Integer)
-    price = Column(Integer)
-    categories = relationship("Category", secondary=product_category_association, back_populates="products", overlaps="products")
-    supplier_id = Column(Integer, ForeignKey('supplier.id'))
-    supplier = relationship("Supplier", back_populates="products")
+def create_product(session):
+    name = input("Enter product name: ")
+    quantity = int(input("Enter quantity: "))
+    price = int(input("Enter price: "))
+    category_names = input("Enter categories (comma-separated): ").split(',')
+    supplier_name = input("Enter supplier name: ")
 
-class Supplier(Base):
-    __tablename__ = 'supplier'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    products = relationship("Product", back_populates="supplier")
-
-# Database URL format: dialect+driver://username:password@host:port/database
-DATABASE_URL = "sqlite:///./stock_management.db"
-engine = create_engine(DATABASE_URL)
-
-# Create tables
-Base.metadata.create_all(bind=engine)
-
-# Create a session to interact with the database
-Session = sessionmaker(bind=engine)
-session = Session()
-
-# Faker instance for data generation
-fake = Faker()
-
-# Function to create a new category
-def create_category(name):
-    category = Category(name=name)
-    session.add(category)
-    session.commit()
-    print(f"Category '{name}' created successfully.")
-
-# Function to add a new product
-def add_product(name, quantity, price, category_names, supplier_name):
     supplier = session.query(Supplier).filter_by(name=supplier_name).first()
     if not supplier:
         supplier = Supplier(name=supplier_name)
@@ -83,71 +54,165 @@ def add_product(name, quantity, price, category_names, supplier_name):
     )
     session.add(product)
     session.commit()
-    print(f"Product '{name}' added successfully.")
+    print("Product created successfully.")
 
-# Function to list all products
-def list_products():
-    products = session.query(Product).all()
-    if not products:
-        print("No products found.")
-        return
-    for product in products:
-        print(f"ID: {product.id}, Name: {product.name}, Quantity: {product.quantity}, Price: {product.price}, Supplier: {product.supplier.name}")
-
-# Function to list all categories
-def list_categories():
-    categories = session.query(Category).all()
-    if not categories:
-        print("No categories found.")
-        return
-    for category in categories:
-        print(f"ID: {category.id}, Name: {category.name}")
-
-# Function to list all suppliers
-def list_suppliers():
-    suppliers = session.query(Supplier).all()
-    if not suppliers:
-        print("No suppliers found.")
-        return
-    for supplier in suppliers:
-        print(f"ID: {supplier.id}, Name: {supplier.name}")
-
-# Function to update product quantity
-def update_product_quantity(product_id, new_quantity):
+def update_product(session):
+    view_products(session)
+    product_id = int(input("Enter the ID of the product to update: "))
     product = session.query(Product).get(product_id)
     if product:
-        product.quantity = new_quantity
+        print(f"Updating product with ID {product_id}")
+        name = input("Enter new name (press Enter to keep current): ")
+        quantity = input("Enter new quantity (press Enter to keep current): ")
+        price = input("Enter new price (press Enter to keep current): ")
+
+        if name:
+            product.name = name
+        if quantity:
+            product.quantity = int(quantity)
+        if price:
+            product.price = int(price)
+
         session.commit()
-        print(f"Product with ID {product_id} quantity updated successfully.")
+        print(f"Product with ID {product_id} updated successfully.")
     else:
         print(f"Product with ID {product_id} not found.")
 
-# Example usage of functions
+def delete_product(session):
+    view_products(session)
+    product_id = int(input("Enter the ID of the product to delete: "))
+    product = session.query(Product).get(product_id)
+    if product:
+        session.delete(product)
+        session.commit()
+        print(f"Product with ID {product_id} deleted successfully.")
+    else:
+        print(f"Product with ID {product_id} not found.")
+
+def create_category(session):
+    name = input("Enter category name: ")
+
+    category = Category(name=name)
+    session.add(category)
+    session.commit()
+    print("Category created successfully.")
+
+def update_category(session):
+    view_categories(session)
+    category_id = int(input("Enter the ID of the category to update: "))
+    category = session.query(Category).get(category_id)
+    if category:
+        print(f"Updating category with ID {category_id}")
+        name = input("Enter new name (press Enter to keep current): ")
+
+        if name:
+            category.name = name
+
+        session.commit()
+        print(f"Category with ID {category_id} updated successfully.")
+    else:
+        print(f"Category with ID {category_id} not found.")
+
+def delete_category(session):
+    view_categories(session)
+    category_id = int(input("Enter the ID of the category to delete: "))
+    category = session.query(Category).get(category_id)
+    if category:
+        session.delete(category)
+        session.commit()
+        print(f"Category with ID {category_id} deleted successfully.")
+    else:
+        print(f"Category with ID {category_id} not found.")
+
+def create_supplier(session):
+    name = input("Enter supplier name: ")
+
+    supplier = Supplier(name=name)
+    session.add(supplier)
+    session.commit()
+    print("Supplier created successfully.")
+
+def update_supplier(session):
+    view_suppliers(session)
+    supplier_id = int(input("Enter the ID of the supplier to update: "))
+    supplier = session.query(Supplier).get(supplier_id)
+    if supplier:
+        print(f"Updating supplier with ID {supplier_id}")
+        name = input("Enter new name (press Enter to keep current): ")
+
+        if name:
+            supplier.name = name
+
+        session.commit()
+        print(f"Supplier with ID {supplier_id} updated successfully.")
+    else:
+        print(f"Supplier with ID {supplier_id} not found.")
+
+def delete_supplier(session):
+    view_suppliers(session)
+    supplier_id = int(input("Enter the ID of the supplier to delete: "))
+    supplier = session.query(Supplier).get(supplier_id)
+    if supplier:
+        session.delete(supplier)
+        session.commit()
+        print(f"Supplier with ID {supplier_id} deleted successfully.")
+    else:
+        print(f"Supplier with ID {supplier_id} not found.")
+
+def main():
+    Base.metadata.create_all(engine)  # Create tables if they don't exist
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    while True:
+        print("\n" + "-" * 50)
+        print("Welcome to Product Management System")
+        print("-" * 50)
+        print("1. View Products")
+        print("2. View Categories")
+        print("3. View Suppliers")
+        print("4. Create Product")
+        print("5. Update Product")
+        print("6. Delete Product")
+        print("7. Create Category")
+        print("8. Update Category")
+        print("9. Delete Category")
+        print("10. Create Supplier")
+        print("11. Update Supplier")
+        print("12. Delete Supplier")
+        print("13. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            view_products(session)
+        elif choice == '2':
+            view_categories(session)
+        elif choice == '3':
+            view_suppliers(session)
+        elif choice == '4':
+            create_product(session)
+        elif choice == '5':
+            update_product(session)
+        elif choice == '6':
+            delete_product(session)
+        elif choice == '7':
+            create_category(session)
+        elif choice == '8':
+            update_category(session)
+        elif choice == '9':
+            delete_category(session)
+        elif choice == '10':
+            create_supplier(session)
+        elif choice == '11':
+            update_supplier(session)
+        elif choice == '12':
+            delete_supplier(session)
+        elif choice == '13':
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
 if __name__ == "__main__":
-    # Example usage of functions
-    create_category("Electronics")
-    add_product("Laptop", 10, 800, ["Electronics"], "TechSupplier")
-    list_products()
-
-    # Add more products
-    add_product("Smartphone", 15, 600, ["Electronics"], "TechSupplier")
-    add_product("Headphones", 20, 100, ["Electronics"], "AudioSupplier")
-    add_product("T-Shirt", 30, 25, ["Clothing"], "FashionSupplier")
-    add_product("Jeans", 25, 50, ["Clothing"], "FashionSupplier")
-    add_product("Watch", 10, 150, ["Accessories"], "TimeSupplier")
-    add_product("Sunglasses", 15, 75, ["Accessories"], "FashionSupplier")
-    add_product("Desk Chair", 5, 200, ["Furniture"], "OfficeSupplier")
-    add_product("Coffee Table", 8, 120, ["Furniture"], "HomeSupplier")
-    add_product("Gaming Laptop", 12, 1200, ["Electronics", "Gaming"], "TechSupplier")
-    add_product("Gaming Mouse", 18, 80, ["Electronics", "Gaming"], "TechSupplier")
-
-    # List all products, categories, and suppliers
-    list_products()
-    list_categories()
-    list_suppliers()
-
-    # Example of updating product quantity
-    update_product_quantity(1, 15)
-
-    # Close the session
-    session.close()
+    main()

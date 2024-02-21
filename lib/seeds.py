@@ -1,55 +1,21 @@
+# seeds.py
 import os
-import sys
-
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Table
-from sqlalchemy.orm import declarative_base, relationship, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from models import Category, Product, Supplier, Base
 from faker import Faker
 
-Base = declarative_base()
-
-# Association table for many-to-many relationship between Product and Category
-product_category_association = Table(
-    'product_category_association', Base.metadata,
-    Column('product_id', Integer, ForeignKey('product.id')),
-    Column('category_id', Integer, ForeignKey('category.id'))
-)
-
-class Category(Base):
-    __tablename__ = 'category'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    products = relationship("Product", secondary=product_category_association, back_populates="categories", overlaps="categories")
-
-class Product(Base):
-    __tablename__ = 'product'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    quantity = Column(Integer)
-    price = Column(Integer)
-    categories = relationship("Category", secondary=product_category_association, back_populates="products", overlaps="products")
-    supplier_id = Column(Integer, ForeignKey('supplier.id'))
-    supplier = relationship("Supplier", back_populates="products")
-
-class Supplier(Base):
-    __tablename__ = 'supplier'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    products = relationship("Product", back_populates="supplier")
-
-# Database URL format: dialect+driver://username:password@host:port/database
 DATABASE_URL = "sqlite:///./stock_management.db"
+
 engine = create_engine(DATABASE_URL)
 
-# Create tables
 Base.metadata.create_all(bind=engine)
 
 # Create a session to interact with the database
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# Faker instance for data generation
+# Faker data generation
 fake = Faker()
 
 # Function to create a new category
@@ -87,6 +53,17 @@ def add_product(name, quantity, price, category_names, supplier_name):
     session.commit()
     print(f"Product '{name}' added successfully.")
 
+# Function to generate random data and add products
+def seed_data(num_products=10):
+    for _ in range(num_products):
+        product_name = fake.word()
+        product_quantity = fake.random_int(min=1, max=100)
+        product_price = fake.random_int(min=10, max=500)
+        category_names = [fake.word() for _ in range(fake.random_int(min=1, max=3))]
+        supplier_name = fake.company()
+
+        add_product(product_name, product_quantity, product_price, category_names, supplier_name)
+
 # Function to list all products
 def list_products():
     products = session.query(Product).all()
@@ -114,11 +91,13 @@ def list_suppliers():
     for supplier in suppliers:
         print(f"ID: {supplier.id}, Name: {supplier.name}")
 
-# ... (Additional functions for your use case)
-
-# After creating tables
 print("Tables present in the database:")
 print(Base.metadata.tables.keys())
 
-# Close the session
+seed_data(num_products=10)
+
+# All products after seeding
+print("\nList of Products after Seeding:")
+list_products()
+
 session.close()
