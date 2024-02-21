@@ -24,7 +24,7 @@ It is designed to help businesses keep track of their product inventory. It allo
 
 1. Clone the repository:
    git clone https://github.com/Dorisk830/Stock_management.git then
-   cd stock-management
+   cd stock_management
 
 
 3. Install dependencies then run the application
